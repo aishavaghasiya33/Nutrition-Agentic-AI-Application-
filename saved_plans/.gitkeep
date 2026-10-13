@@ -1,0 +1,2 @@
+# This file keeps the saved_plans/ directory tracked by git.
+# Nutrition plan .md files generated at runtime are excluded via .gitignore.

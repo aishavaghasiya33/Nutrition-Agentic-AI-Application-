@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NutriCoach AI — IBM Granite Powered Nutrition Advisor</title>
+  <style>
+    /* ── Reset & Variables ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --primary: #1a6b3c;
+      --primary-light: #2d9e5f;
+      --primary-dark: #134f2d;
+      --accent: #f59e0b;
+      --accent-light: #fde68a;
+      --ibm-blue: #0f62fe;
+      --ibm-blue-dark: #0043ce;
+      --surface: #f8fdf9;
+      --surface2: #f0f7f2;
+      --card: #ffffff;
+      --border: #d1e7d9;
+      --text: #1a2e1e;
+      --text-muted: #5a7a62;
+      --danger: #dc2626;
+      --warning: #d97706;
+      --shadow: 0 2px 12px rgba(26,107,60,0.10);
+      --shadow-lg: 0 8px 32px rgba(26,107,60,0.15);
+      --radius: 12px;
+      --radius-sm: 8px;
+    }
+
+    body {
+      font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+      background: var(--surface);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ── */
+    header {
+      background: linear-gradient(135deg, var(--primary-dark) 0%, var(--primary) 60%, var(--primary-light) 100%);
+      color: white;
+      padding: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo-icon {
+      font-size: 2rem;
+      line-height: 1;
+    }
+    .logo-text h1 {
+      font-size: 1.4rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .logo-text p {
+      font-size: 0.78rem;
+      opacity: 0.85;
+      margin-top: 1px;
+    }
+    .ibm-badge {
+      background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.3);
+      border-radius: 20px;
+      padding: 5px 14px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+
+    /* ── Navigation Tabs ── */
+    .nav-tabs {
+      display: flex;
+      gap: 0;
+      background: rgba(255,255,255,0.10);
+      border-radius: 0;
+      border-top: 1px solid rgba(255,255,255,0.15);
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .nav-tab {
+      padding: 10px 22px;
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: rgba(255,255,255,0.8);
+      border-bottom: 3px solid transparent;
+      transition: all 0.2s;
+      user-select: none;
+    }
+    .nav-tab:hover { color: white; background: rgba(255,255,255,0.08); }
+    .nav-tab.active { color: white; border-bottom-color: var(--accent); font-weight: 600; }
+
+    /* ── Main Layout ── */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 28px 24px;
+    }
+
+    /* ── Tab Panels ── */
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+    .card-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-dark);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .card-title::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+      margin-left: 8px;
+    }
+
+    /* ── Form ── */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 18px;
+    }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full-width { grid-column: 1 / -1; }
+    label {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+    input, select, textarea {
+      padding: 10px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 0.95rem;
+      color: var(--text);
+      background: white;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary-light);
+      box-shadow: 0 0 0 3px rgba(45,158,95,0.12);
+    }
+    textarea { resize: vertical; min-height: 80px; }
+
+    /* ── Buttons ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--primary-dark); box-shadow: 0 4px 12px rgba(26,107,60,0.3); transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-secondary {
+      background: var(--surface2);
+      color: var(--primary-dark);
+      border: 1.5px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-ibm {
+      background: var(--ibm-blue);
+      color: white;
+    }
+    .btn-ibm:hover { background: var(--ibm-blue-dark); box-shadow: 0 4px 12px rgba(15,98,254,0.3); }
+    .btn-sm { padding: 7px 14px; font-size: 0.82rem; }
+    .btn-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+
+    /* ── Loading Spinner ── */
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Alerts ── */
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .alert-error { background: #fef2f2; border: 1px solid #fecaca; color: var(--danger); }
+    .alert-success { background: #f0fdf4; border: 1px solid #bbf7d0; color: #15803d; }
+    .alert-info { background: #eff6ff; border: 1px solid #bfdbfe; color: var(--ibm-blue-dark); }
+    .alert-warning { background: #fffbeb; border: 1px solid #fde68a; color: var(--warning); }
+
+    /* ── Plan Output ── */
+    .plan-output {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px 32px;
+      margin-top: 24px;
+      font-size: 0.93rem;
+      line-height: 1.75;
+    }
+    .plan-output h1 { font-size: 1.5rem; color: var(--primary-dark); margin-bottom: 12px; }
+    .plan-output h2 { font-size: 1.15rem; color: var(--primary); margin: 20px 0 10px; border-bottom: 1px solid var(--border); padding-bottom: 6px; }
+    .plan-output h3 { font-size: 1rem; color: var(--primary-dark); margin: 16px 0 8px; }
+    .plan-output p { margin-bottom: 10px; }
+    .plan-output ul, .plan-output ol { padding-left: 20px; margin-bottom: 10px; }
+    .plan-output li { margin-bottom: 4px; }
+    .plan-output table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.88rem; }
+    .plan-output th { background: var(--primary); color: white; padding: 9px 12px; text-align: left; }
+    .plan-output td { padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    .plan-output tr:nth-child(even) td { background: rgba(26,107,60,0.04); }
+    .plan-output blockquote { border-left: 4px solid var(--accent); padding: 10px 16px; margin: 12px 0; background: var(--accent-light); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: #92400e; }
+    .plan-output strong { color: var(--primary-dark); }
+    .plan-output code { background: var(--surface2); padding: 2px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; }
+    .plan-output hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+
+    /* ── Reasoning Trace ── */
+    .trace-panel {
+      background: #0f1117;
+      color: #8be08b;
+      border-radius: var(--radius-sm);
+      padding: 16px 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82rem;
+      line-height: 1.8;
+      margin-top: 16px;
+      max-height: 220px;
+      overflow-y: auto;
+    }
+    .trace-panel summary { cursor: pointer; font-family: inherit; color: #8be08b; margin-bottom: 8px; }
+
+    /* ── Chat / Q&A ── */
+    .chat-container {
+      display: flex;
+      flex-direction: column;
+      height: 480px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .chat-messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .chat-msg {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .chat-msg.user { flex-direction: row-reverse; }
+    .chat-avatar {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+      font-weight: 700;
+    }
+    .chat-msg.bot .chat-avatar { background: var(--primary); color: white; }
+    .chat-msg.user .chat-avatar { background: var(--ibm-blue); color: white; font-size: 0.8rem; }
+    .chat-bubble {
+      max-width: 72%;
+      padding: 11px 15px;
+      border-radius: 16px;
+      font-size: 0.9rem;
+      line-height: 1.6;
+    }
+    .chat-msg.bot .chat-bubble {
+      background: white;
+      border: 1px solid var(--border);
+      border-top-left-radius: 4px;
+      color: var(--text);
+    }
+    .chat-msg.user .chat-bubble {
+      background: var(--primary);
+      color: white;
+      border-top-right-radius: 4px;
+    }
+    .chat-input-row {
+      display: flex;
+      gap: 10px;
+      padding: 14px 16px;
+      background: white;
+      border-top: 1px solid var(--border);
+    }
+    .chat-input-row input {
+      flex: 1;
+      border-radius: 24px;
+      padding: 10px 18px;
+    }
+    .chat-input-row .btn { border-radius: 24px; padding: 10px 20px; }
+
+    /* ── Suggestions ── */
+    .suggestions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 10px 16px;
+      background: var(--surface2);
+      border-top: 1px solid var(--border);
+    }
+    .suggestion-chip {
+      padding: 5px 12px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      color: var(--primary-dark);
+      transition: all 0.15s;
+    }
+    .suggestion-chip:hover { background: var(--surface2); border-color: var(--primary-light); color: var(--primary); }
+
+    /* ── Info Cards ── */
+    .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .info-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      padding: 18px;
+      text-align: center;
+    }
+    .info-card .value { font-size: 1.8rem; font-weight: 700; color: var(--primary); line-height: 1.2; }
+    .info-card .label { font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    .info-card .sub { font-size: 0.82rem; color: var(--text-muted); margin-top: 4px; }
+
+    /* ── Saved Plans ── */
+    .plans-list { display: flex; flex-direction: column; gap: 10px; }
+    .plan-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      gap: 12px;
+    }
+    .plan-item-name { font-size: 0.88rem; font-weight: 500; color: var(--text); word-break: break-all; }
+    .plan-item-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+    /* ── Steps progress ── */
+    .steps {
+      display: flex;
+      gap: 0;
+      margin-bottom: 28px;
+      background: white;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .step {
+      flex: 1;
+      padding: 12px 16px;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border);
+      background: white;
+      transition: all 0.2s;
+    }
+    .step:last-child { border-right: none; }
+    .step.done { background: var(--surface2); color: var(--primary); }
+    .step.active { background: var(--primary); color: white; }
+    .step-num { display: block; font-size: 1.2rem; margin-bottom: 2px; }
+
+    /* ── Disclaimer ── */
+    .disclaimer {
+      background: #fff7ed;
+      border: 1px solid #fdba74;
+      border-radius: var(--radius-sm);
+      padding: 14px 18px;
+      font-size: 0.82rem;
+      color: #9a3412;
+      line-height: 1.6;
+      margin-top: 24px;
+    }
+    .disclaimer strong { display: block; margin-bottom: 4px; }
+
+    /* ── Welcome Screen ── */
+    .welcome {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .welcome-icon { font-size: 4rem; margin-bottom: 16px; }
+    .welcome h2 { font-size: 1.6rem; color: var(--primary-dark); margin-bottom: 10px; }
+    .welcome p { color: var(--text-muted); max-width: 520px; margin: 0 auto; }
+    .feature-chips {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .feature-chip {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 0.82rem;
+      color: var(--primary-dark);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .header-inner { padding: 12px 16px; }
+      .main { padding: 16px; }
+      .card { padding: 18px; }
+      .ibm-badge { display: none; }
+      .plan-output { padding: 16px; }
+      .chat-bubble { max-width: 88%; }
+    }
+
+    /* ── Scrollbar styling ── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--surface2); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    /* ── Typing indicator ── */
+    .typing-indicator span {
+      display: inline-block;
+      width: 7px; height: 7px;
+      background: var(--text-muted);
+      border-radius: 50%;
+      animation: bounce 1.2s infinite;
+      margin: 0 2px;
+    }
+    .typing-indicator span:nth-child(2) { animation-delay: 0.2s; }
+    .typing-indicator span:nth-child(3) { animation-delay: 0.4s; }
+    @keyframes bounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+
+<!-- ═══════════════════════ HEADER ═══════════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">🥗</div>
+      <div class="logo-text">
+        <h1>NutriCoach AI</h1>
+        <p>Personalised Nutrition Planning · Powered by IBM Granite</p>
+      </div>
+    </div>
+    <div class="ibm-badge">⚡ IBM Granite LLM</div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('plan-tab')">📋 Nutrition Plan</div>
+    <div class="nav-tab" onclick="switchTab('chat-tab')">💬 Ask NutriCoach</div>
+    <div class="nav-tab" onclick="switchTab('saved-tab')">📁 Saved Plans</div>
+    <div class="nav-tab" onclick="switchTab('about-tab')">ℹ️ About</div>
+  </div>
+</header>
+
+<!-- ═══════════════════════ MAIN ═══════════════════════ -->
+<main class="main">
+
+  <!-- ─── TAB 1: NUTRITION PLAN ─── -->
+  <div id="plan-tab" class="tab-panel active">
+
+    <!-- Step indicator -->
+    <div class="steps" id="stepIndicator">
+      <div class="step active" id="step1"><span class="step-num">1️⃣</span>Your Details</div>
+      <div class="step" id="step2"><span class="step-num">2️⃣</span>AI Processing</div>
+      <div class="step" id="step3"><span class="step-num">3️⃣</span>Your Plan</div>
+    </div>
+
+    <!-- User Profile Form -->
+    <div class="card" id="formCard">
+      <div class="card-title">👤 Tell Us About Yourself</div>
+      <div id="formAlerts"></div>
+      <form id="profileForm">
+        <div class="form-grid">
+          <div class="form-group">
+            <label for="name">Full Name *</label>
+            <input type="text" id="name" name="name" placeholder="e.g. Priya Sharma" required />
+          </div>
+          <div class="form-group">
+            <label for="age">Age *</label>
+            <input type="number" id="age" name="age" placeholder="e.g. 32" min="5" max="110" required />
+          </div>
+          <div class="form-group">
+            <label for="gender">Gender</label>
+            <select id="gender" name="gender">
+              <option value="unspecified">Prefer not to say</option>
+              <option value="female">Female</option>
+              <option value="male">Male</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="diet_preference">Diet Preference *</label>
+            <select id="diet_preference" name="diet_preference" required>
+              <option value="">Select…</option>
+              <option value="vegetarian">🥦 Vegetarian</option>
+              <option value="non-vegetarian">🍗 Non-Vegetarian</option>
+              <option value="vegan">🌱 Vegan</option>
+              <option value="pescatarian">🐟 Pescatarian</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="city">City *</label>
+            <input type="text" id="city" name="city" placeholder="e.g. Mumbai" required />
+          </div>
+          <div class="form-group">
+            <label for="country">Country *</label>
+            <input type="text" id="country" name="country" placeholder="e.g. India" required />
+          </div>
+          <div class="form-group full-width">
+            <label for="medical_history">Medical History / Health Conditions</label>
+            <textarea id="medical_history" name="medical_history" placeholder="e.g. Type 2 Diabetes, High Blood Pressure&#10;Enter 'None' if no conditions"></textarea>
+            <small style="color:var(--text-muted);font-size:0.78rem;margin-top:4px;">This helps personalise your plan. Your data stays on this device only.</small>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button type="submit" class="btn btn-primary" id="generateBtn">
+            <span>🚀 Generate My Nutrition Plan</span>
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="fillDemo()">
+            ✨ Fill Demo Profile
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading State -->
+    <div class="card hidden" id="loadingCard">
+      <div style="text-align:center; padding: 32px 16px;">
+        <div style="font-size:3rem;margin-bottom:16px;">🤖</div>
+        <h3 style="color:var(--primary-dark);margin-bottom:8px;">NutriCoach AI is Working…</h3>
+        <p style="color:var(--text-muted);margin-bottom:24px;">Running agentic AI pipeline with IBM Granite</p>
+        <div id="traceLog" style="text-align:left;"></div>
+      </div>
+    </div>
+
+    <!-- Results -->
+    <div id="resultsSection" class="hidden">
+      <!-- Calorie Info Cards -->
+      <div class="info-grid" id="calorieCards"></div>
+
+      <!-- Plan -->
+      <div class="card">
+        <div class="card-title">📋 Your Personalised Nutrition Plan</div>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;" id="planActions">
+          <button class="btn btn-secondary btn-sm" onclick="copyPlan()">📋 Copy Plan</button>
+          <button class="btn btn-primary btn-sm" id="downloadBtn" onclick="downloadPlan()">⬇️ Download .md</button>
+          <span id="savedBadge" class="hidden" style="background:#d1fae5;border:1px solid #6ee7b7;border-radius:6px;padding:5px 12px;font-size:0.8rem;color:#065f46;">✅ Saved to file</span>
+        </div>
+        <div class="plan-output" id="planContent"></div>
+
+        <!-- Reasoning Trace -->
+        <details style="margin-top:16px;">
+          <summary style="cursor:pointer;font-size:0.85rem;color:var(--text-muted);font-weight:600;">🧠 View Agent Reasoning Trace</summary>
+          <div class="trace-panel" id="reasoningTrace"></div>
+        </details>
+      </div>
+
+      <div class="btn-row">
+        <button class="btn btn-secondary" onclick="resetForm()">🔄 Create New Plan</button>
+        <button class="btn btn-ibm" onclick="switchTab('chat-tab')">💬 Ask Follow-up Questions</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── TAB 2: CHAT / Q&A ─── -->
+  <div id="chat-tab" class="tab-panel">
+    <div class="card">
+      <div class="card-title">💬 Ask NutriCoach AI</div>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:16px;">
+        Ask any nutrition, diet, or health-related question. NutriCoach remembers your profile context for personalised answers.
+      </p>
+      <div class="chat-container">
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-msg bot">
+            <div class="chat-avatar">🥗</div>
+            <div class="chat-bubble">
+              <strong>Hello! I'm NutriCoach AI</strong>, powered by IBM Granite. 👋<br><br>
+              I'm here to answer your nutrition and health questions. You can ask me about calories, meal planning, specific diets, nutrients, or managing health conditions through diet.<br><br>
+              💡 <em>Tip: Generate your personalised plan first so I can give you context-aware answers!</em>
+            </div>
+          </div>
+        </div>
+        <div class="suggestions" id="suggestionsBar">
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">How much protein do I need daily?</span>
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">Best foods for diabetes?</span>
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">How to reduce blood pressure with diet?</span>
+          <span class="suggestion-chip" onclick="sendSuggestion(this)">What are healthy snack options?</span>
+        </div>
+        <div class="chat-input-row">
+          <input type="text" id="chatInput" placeholder="Ask a nutrition question…" onkeydown="if(event.key==='Enter')sendMessage()" />
+          <button class="btn btn-primary" onclick="sendMessage()" id="sendBtn">Send</button>
+        </div>
+      </div>
+    </div>
+    <div class="disclaimer">
+      <strong>⚕️ Reminder</strong>
+      NutriCoach AI provides general nutritional information only. Always consult a qualified healthcare professional or registered dietitian for personalised medical dietary advice.
+    </div>
+  </div>
+
+  <!-- ─── TAB 3: SAVED PLANS ─── -->
+  <div id="saved-tab" class="tab-panel">
+    <div class="card">
+      <div class="card-title">📁 Saved Nutrition Plans</div>
+      <p style="color:var(--text-muted);font-size:0.88rem;margin-bottom:20px;">
+        All generated plans are automatically saved as <code>.md</code> Markdown files in the <code>saved_plans/</code> folder.
+      </p>
+      <button class="btn btn-secondary btn-sm" onclick="loadSavedPlans()" style="margin-bottom:16px;">🔄 Refresh List</button>
+      <div id="savedPlansList" class="plans-list">
+        <p style="color:var(--text-muted);font-size:0.9rem;">Loading saved plans…</p>
+      </div>
+    </div>
+
+    <!-- Plan Viewer -->
+    <div class="card hidden" id="planViewCard">
+      <div class="card-title" id="planViewTitle">📄 Viewing Plan</div>
+      <button class="btn btn-secondary btn-sm" onclick="document.getElementById('planViewCard').classList.add('hidden')" style="margin-bottom:16px;">← Back to List</button>
+      <div class="plan-output" id="planViewContent"></div>
+    </div>
+  </div>
+
+  <!-- ─── TAB 4: ABOUT ─── -->
+  <div id="about-tab" class="tab-panel">
+    <div class="card">
+      <div class="card-title">🤖 About NutriCoach AI</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+        <div>
+          <h3 style="color:var(--primary-dark);margin-bottom:10px;">🏗️ Agentic AI Architecture</h3>
+          <p style="color:var(--text-muted);font-size:0.9rem;margin-bottom:12px;">Built following the full Agentic AI SDLC, NutriCoach implements a ReAct (Reason + Act) agent loop:</p>
+          <ol style="color:var(--text-muted);font-size:0.87rem;padding-left:18px;line-height:2;">
+            <li><strong>THINK</strong> — Analyse user profile</li>
+            <li><strong>ACT</strong> — Call registered tools</li>
+            <li><strong>REASON</strong> — Build enriched context</li>
+            <li><strong>GENERATE</strong> — IBM Granite LLM inference</li>
+            <li><strong>VALIDATE</strong> — Guardrail safety checks</li>
+            <li><strong>OUTPUT</strong> — Safe, personalised plan</li>
+          </ol>
+        </div>
+        <div>
+          <h3 style="color:var(--primary-dark);margin-bottom:10px;">🔧 Agent Tools</h3>
+          <ul style="color:var(--text-muted);font-size:0.87rem;padding-left:18px;line-height:2.2;">
+            <li><code>get_local_foods</code> — Regional food database</li>
+            <li><code>get_medical_adjustments</code> — Condition-specific diet rules</li>
+            <li><code>calculate_bmr</code> — Mifflin-St Jeor calorie estimation</li>
+            <li><code>answer_query</code> — Multi-turn Q&A with context</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--primary-dark);margin-bottom:10px;">🛡️ Ethics & Guardrails</h3>
+          <ul style="color:var(--text-muted);font-size:0.87rem;padding-left:18px;line-height:2.2;">
+            <li>HAM principles (Helpful, Accurate, Mindful)</li>
+            <li>Input safety & prompt injection detection</li>
+            <li>Output scanning for harmful advice</li>
+            <li>Condition-specific medical warnings</li>
+            <li>Mandatory medical disclaimer</li>
+            <li>No PII stored server-side</li>
+          </ul>
+        </div>
+        <div>
+          <h3 style="color:var(--primary-dark);margin-bottom:10px;">🤖 IBM Granite Model</h3>
+          <p style="color:var(--text-muted);font-size:0.87rem;line-height:1.8;">
+            Uses <strong>ibm/granite-13b-instruct-v2</strong> via IBM watsonx.ai platform. The model is configured with safety constraints, repetition penalties, and domain-specific system prompts to ensure nutritionally accurate and ethically responsible output.
+          </p>
+          <p style="color:var(--text-muted);font-size:0.87rem;margin-top:8px;">
+            When credentials are not configured, the app runs in <strong>offline mode</strong> with a structured rule-based plan generator, ensuring the app is always demonstrable.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">📐 Agentic AI SDLC Phases</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-weight:700;color:var(--primary-dark);margin-bottom:6px;">1. Requirements</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">User profiling, medical ethics, HAM principles, output format specs</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-weight:700;color:var(--primary-dark);margin-bottom:6px;">2. Design</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">ReAct loop architecture, tool registry, guardrail layers, prompt engineering</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-weight:700;color:var(--primary-dark);margin-bottom:6px;">3. Development</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">Flask backend, IBM Granite integration, agent tools, plan saver module</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-weight:700;color:var(--primary-dark);margin-bottom:6px;">4. Testing</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">Input validation, output safety checks, edge case handling, offline fallback</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-weight:700;color:var(--primary-dark);margin-bottom:6px;">5. Deployment</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">One-click .bat launcher, venv setup, auto-install, browser auto-open</div>
+        </div>
+        <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:14px;">
+          <div style="font-weight:700;color:var(--primary-dark);margin-bottom:6px;">6. Monitoring</div>
+          <div style="font-size:0.82rem;color:var(--text-muted);">Agent reasoning trace, source tracking, plan persistence, health endpoint</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="disclaimer">
+      <strong>⚕️ Medical Disclaimer</strong>
+      NutriCoach AI is an informational tool only and does not constitute medical advice, diagnosis, or treatment. All nutrition plans generated by this application are for general informational purposes. Always consult a qualified healthcare professional, physician, or registered dietitian before making significant changes to your diet, especially if you have existing medical conditions or take prescription medications. The developers of this application assume no liability for health outcomes based on this application's output.
+    </div>
+  </div>
+
+</main>
+
+<!-- ═══════════════════════ JAVASCRIPT ═══════════════════════ -->
+<script>
+  // ── Tab switching ──────────────────────────────────────────
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabId).classList.add('active');
+    const idx = ['plan-tab','chat-tab','saved-tab','about-tab'].indexOf(tabId);
+    document.querySelectorAll('.nav-tab')[idx].classList.add('active');
+    if (tabId === 'saved-tab') loadSavedPlans();
+  }
+
+  // ── Demo fill ──────────────────────────────────────────────
+  function fillDemo() {
+    document.getElementById('name').value = 'Priya Sharma';
+    document.getElementById('age').value = '34';
+    document.getElementById('gender').value = 'female';
+    document.getElementById('diet_preference').value = 'vegetarian';
+    document.getElementById('city').value = 'Mumbai';
+    document.getElementById('country').value = 'India';
+    document.getElementById('medical_history').value = 'Type 2 Diabetes, High Blood Pressure';
+  }
+
+  // ── Markdown to HTML renderer ──────────────────────────────
+  function mdToHtml(text) {
+    let html = text
+      .replace(/^---+$/gm, '<hr>')
+      .replace(/^#{4} (.+)$/gm, '<h4>$1</h4>')
+      .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.+?)\*/g, '<em>$1</em>')
+      .replace(/`([^`]+)`/g, '<code>$1</code>')
+      .replace(/^> (.+)$/gm, '<blockquote>$1</blockquote>');
+
+    // Tables
+    html = html.replace(/(\|.+\|\n?)+/g, (table) => {
+      const rows = table.trim().split('\n');
+      let result = '<table>';
+      rows.forEach((row, i) => {
+        if (row.match(/^\|[\s\-|]+\|$/)) return;
+        const cells = row.split('|').slice(1, -1);
+        const tag = i === 0 ? 'th' : 'td';
+        result += '<tr>' + cells.map(c => `<${tag}>${c.trim()}</${tag}>`).join('') + '</tr>';
+      });
+      result += '</table>';
+      return result;
+    });
+
+    // Lists
+    html = html.replace(/^(\d+)\. (.+)$/gm, '<li>$2</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, m => `<ol>${m}</ol>`);
+    html = html.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
+    html = html.replace(/(<li>.*<\/li>\n?)+/g, m => {
+      if (m.includes('<ol>')) return m;
+      return `<ul>${m}</ul>`;
+    });
+
+    // Paragraphs
+    html = html.replace(/\n\n/g, '</p><p>');
+    return `<p>${html}</p>`;
+  }
+
+  // ── Form submission ────────────────────────────────────────
+  document.getElementById('profileForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const alerts = document.getElementById('formAlerts');
+    alerts.innerHTML = '';
+
+    const profile = {
+      name: document.getElementById('name').value,
+      age: document.getElementById('age').value,
+      gender: document.getElementById('gender').value,
+      diet_preference: document.getElementById('diet_preference').value,
+      city: document.getElementById('city').value,
+      country: document.getElementById('country').value,
+      medical_history: document.getElementById('medical_history').value || 'None',
+    };
+
+    // Show loading
+    document.getElementById('formCard').classList.add('hidden');
+    document.getElementById('loadingCard').classList.remove('hidden');
+    document.getElementById('resultsSection').classList.add('hidden');
+    document.getElementById('step1').classList.remove('active'); document.getElementById('step1').classList.add('done');
+    document.getElementById('step2').classList.add('active');
+
+    // Animate trace log
+    const traceLog = document.getElementById('traceLog');
+    const steps = [
+      '🔍 THINK: Analysing user profile…',
+      '🌍 ACT: Fetching local food data for ' + profile.city + '…',
+      '🏥 ACT: Processing medical history…',
+      '🔢 ACT: Calculating caloric requirements…',
+      '📝 REASON: Building personalised prompt…',
+      '🤖 GENERATE: Calling IBM Granite LLM…',
+      '🛡️ VALIDATE: Running safety guardrails…',
+      '💾 SAVE: Writing plan to .md file…',
+    ];
+
+    for (let i = 0; i < steps.length; i++) {
+      await new Promise(r => setTimeout(r, 400));
+      traceLog.innerHTML += `<div class="trace-panel" style="margin-bottom:6px;padding:8px 14px;font-size:0.82rem;">${steps[i]}</div>`;
+    }
+
+    try {
+      const resp = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(profile),
+      });
+      const data = await resp.json();
+
+      document.getElementById('loadingCard').classList.add('hidden');
+
+      if (!data.success) {
+        document.getElementById('formCard').classList.remove('hidden');
+        alerts.innerHTML = `<div class="alert alert-error">❌ ${(data.errors || []).join('<br>')}</div>`;
+        document.getElementById('step1').classList.remove('done'); document.getElementById('step1').classList.add('active');
+        document.getElementById('step2').classList.remove('active');
+        return;
+      }
+
+      // Show calorie cards
+      const ci = data.calorie_info;
+      document.getElementById('calorieCards').innerHTML = `
+        <div class="info-card"><div class="value">${ci.bmr}</div><div class="label">Base Metabolic Rate</div><div class="sub">kcal/day</div></div>
+        <div class="info-card"><div class="value">${ci.sedentary}</div><div class="label">Sedentary Intake</div><div class="sub">kcal/day</div></div>
+        <div class="info-card"><div class="value">${ci.moderate}</div><div class="label">Moderate Activity</div><div class="sub">kcal/day (Target)</div></div>
+        <div class="info-card"><div class="value">${ci.active}</div><div class="label">Active Lifestyle</div><div class="sub">kcal/day</div></div>
+      `;
+
+      // Render plan
+      document.getElementById('planContent').innerHTML = mdToHtml(data.plan);
+
+      // Show reasoning trace
+      const trace = data.reasoning_trace || [];
+      document.getElementById('reasoningTrace').innerHTML = trace.map(t => `$ ${t}`).join('\n');
+
+      // Show saved badge
+      if (data.saved_file) {
+        document.getElementById('savedBadge').classList.remove('hidden');
+        document.getElementById('downloadBtn').setAttribute('data-filename', data.saved_file);
+        document.getElementById('downloadBtn').setAttribute('data-plan', data.plan);
+      }
+
+      // Source badge
+      const sourceText = data.source === 'ibm_granite' ? '⚡ IBM Granite LLM' : '🔧 Structured AI Engine';
+      document.getElementById('planActions').insertAdjacentHTML('afterbegin',
+        `<span style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:5px 12px;font-size:0.8rem;color:#1d4ed8;">${sourceText}</span>`
+      );
+
+      document.getElementById('resultsSection').classList.remove('hidden');
+      document.getElementById('step2').classList.remove('active'); document.getElementById('step2').classList.add('done');
+      document.getElementById('step3').classList.add('active');
+
+      // Scroll to results
+      document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+    } catch (err) {
+      document.getElementById('loadingCard').classList.add('hidden');
+      document.getElementById('formCard').classList.remove('hidden');
+      alerts.innerHTML = `<div class="alert alert-error">❌ Network error: ${err.message}</div>`;
+      document.getElementById('step1').classList.remove('done'); document.getElementById('step1').classList.add('active');
+      document.getElementById('step2').classList.remove('active');
+    }
+  });
+
+  // ── Download .md ───────────────────────────────────────────
+  function downloadPlan() {
+    const btn = document.getElementById('downloadBtn');
+    const planText = btn.getAttribute('data-plan');
+    if (!planText) return;
+    const blob = new Blob([planText], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = btn.getAttribute('data-filename') || 'nutrition_plan.md';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ── Copy plan ──────────────────────────────────────────────
+  function copyPlan() {
+    const text = document.getElementById('planContent').innerText;
+    navigator.clipboard.writeText(text).then(() => {
+      const btn = event.target;
+      btn.textContent = '✅ Copied!';
+      setTimeout(() => btn.textContent = '📋 Copy Plan', 2000);
+    });
+  }
+
+  // ── Reset ──────────────────────────────────────────────────
+  function resetForm() {
+    document.getElementById('profileForm').reset();
+    document.getElementById('formCard').classList.remove('hidden');
+    document.getElementById('resultsSection').classList.add('hidden');
+    document.getElementById('calorieCards').innerHTML = '';
+    document.getElementById('formAlerts').innerHTML = '';
+    ['step1','step2','step3'].forEach(s => {
+      document.getElementById(s).classList.remove('active','done');
+    });
+    document.getElementById('step1').classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ── Chat ───────────────────────────────────────────────────
+  async function sendMessage() {
+    const input = document.getElementById('chatInput');
+    const question = input.value.trim();
+    if (!question) return;
+    input.value = '';
+    appendMessage('user', question);
+    showTyping();
+    document.getElementById('sendBtn').disabled = true;
+    document.getElementById('suggestionsBar').classList.add('hidden');
+
+    try {
+      const resp = await fetch('/api/ask', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question }),
+      });
+      const data = await resp.json();
+      removeTyping();
+      if (data.success) {
+        appendMessage('bot', data.answer);
+      } else {
+        appendMessage('bot', '⚠️ ' + (data.error || 'Something went wrong. Please try again.'));
+      }
+    } catch (err) {
+      removeTyping();
+      appendMessage('bot', '⚠️ Network error. Please check your connection and try again.');
+    }
+    document.getElementById('sendBtn').disabled = false;
+  }
+
+  function sendSuggestion(el) {
+    document.getElementById('chatInput').value = el.textContent;
+    sendMessage();
+  }
+
+  function appendMessage(role, text) {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = `chat-msg ${role}`;
+    const avatar = role === 'bot'
+      ? '<div class="chat-avatar">🥗</div>'
+      : '<div class="chat-avatar" style="font-size:0.75rem;">YOU</div>';
+    div.innerHTML = `${avatar}<div class="chat-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function showTyping() {
+    const msgs = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'chat-msg bot';
+    div.id = 'typingIndicator';
+    div.innerHTML = '<div class="chat-avatar">🥗</div><div class="chat-bubble"><div class="typing-indicator"><span></span><span></span><span></span></div></div>';
+    msgs.appendChild(div);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function removeTyping() {
+    const el = document.getElementById('typingIndicator');
+    if (el) el.remove();
+  }
+
+  // ── Saved Plans ────────────────────────────────────────────
+  async function loadSavedPlans() {
+    const container = document.getElementById('savedPlansList');
+    container.innerHTML = '<p style="color:var(--text-muted);font-size:0.9rem;">Loading…</p>';
+    try {
+      const resp = await fetch('/api/saved-plans');
+      const data = await resp.json();
+      if (!data.plans || data.plans.length === 0) {
+        container.innerHTML = '<div class="alert alert-info">📭 No saved plans yet. Generate your first plan to see it here!</div>';
+        return;
+      }
+      container.innerHTML = data.plans.map(f => `
+        <div class="plan-item">
+          <div class="plan-item-name">📄 ${f}</div>
+          <div class="plan-item-actions">
+            <button class="btn btn-secondary btn-sm" onclick="viewPlan('${f}')">👁 View</button>
+            <button class="btn btn-primary btn-sm" onclick="downloadSavedPlan('${f}')">⬇️</button>
+          </div>
+        </div>
+      `).join('');
+    } catch (err) {
+      container.innerHTML = `<div class="alert alert-error">Error loading plans: ${err.message}</div>`;
+    }
+  }
+
+  async function viewPlan(filename) {
+    try {
+      const resp = await fetch(`/api/load-plan/${encodeURIComponent(filename)}`);
+      const data = await resp.json();
+      if (data.success) {
+        document.getElementById('planViewTitle').textContent = '📄 ' + filename;
+        document.getElementById('planViewContent').innerHTML = mdToHtml(data.content);
+        document.getElementById('planViewCard').classList.remove('hidden');
+        document.getElementById('planViewCard').scrollIntoView({ behavior: 'smooth' });
+      }
+    } catch (err) {
+      alert('Error loading plan: ' + err.message);
+    }
+  }
+
+  async function downloadSavedPlan(filename) {
+    const resp = await fetch(`/api/load-plan/${encodeURIComponent(filename)}`);
+    const data = await resp.json();
+    if (data.success) {
+      const blob = new Blob([data.content], { type: 'text/markdown' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; a.click();
+      URL.revokeObjectURL(url);
+    }
+  }
+</script>
+</body>
+</html>

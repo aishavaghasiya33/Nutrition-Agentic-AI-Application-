@@ -1,0 +1,17 @@
+# NutriCoach AI — Python Dependencies
+# IBM Granite LLM · Flask · Agentic AI Application
+# Install with: pip install -r requirements.txt
+
+# ── Web Framework ────────────────────────────────────────────────────────────
+flask==3.0.3
+flask-cors==4.0.1
+
+# ── HTTP & Utilities ─────────────────────────────────────────────────────────
+requests==2.32.3
+python-dotenv==1.0.1
+
+# ── Markdown Rendering ───────────────────────────────────────────────────────
+markdown==3.6
+
+# ── IBM watsonx.ai SDK (IBM Granite LLM) ─────────────────────────────────────
+ibm-watsonx-ai==1.1.2
